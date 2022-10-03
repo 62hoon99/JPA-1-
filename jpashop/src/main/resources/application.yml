@@ -11,6 +11,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
-logging:
-  level:
-    org.hibernate.sql: debug
+        show_sql: true
+        default_batch_fetch_size: 100 #100개 까지 모아놨다가 지연로딩인 것들 in 사용해서 조회
+
+logging.level:
+  org.hibernate.sql: debug

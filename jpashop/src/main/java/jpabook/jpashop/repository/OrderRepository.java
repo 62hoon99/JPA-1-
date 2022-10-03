@@ -1,7 +1,7 @@
 package jpabook.jpashop.repository;
 
 import jpabook.jpashop.domain.Order;
-import jpabook.jpashop.service.OrderService;
+import jpabook.jpashop.repository.order.simplequery.OrderSimpleQueryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -97,5 +97,40 @@ public class OrderRepository {
         cq.where(cb.and(criteria.toArray(new Predicate[criteria.size()])));
         TypedQuery<Order> query = em.createQuery(cq).setMaxResults(1000); //최대1000건
         return query.getResultList();
+    }
+
+    public List<Order> findAllWithMemberDelivery() {
+        return em.createQuery(
+                "select o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class
+        ).getResultList();
+    }
+
+    public List<Order> findAllWithItem() {
+        return em.createQuery(
+                "select distinct o from Order o" + // distinct가 있으면 Order 중에 id값 중복이 있으면 중복을 제거한다.
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d" +
+                        " join fetch o.orderItems oi" +
+                        " join fetch oi.item i", Order.class)
+                .getResultList(); // 메모리에서 페이징을 시도하는 문제가 발생할 수 있다.
+    }
+
+    /**
+     * ToOne 들만 fetch join을 해준다. -> 중복이 없기 때문에 distinct를 안써줘도 된다.
+     * offset은 paging 시작하는 지점
+     * limit은 offset + limit 까지 select 하라는 거
+     *         default_batch_fetch_size: 100  <-- 이렇게 JPA를 튜닝하면 100개 마다 지연로딩 들을 in 문법을 사용해서 select 해준다.
+     * 그래서 페이징을 사용할 수 있다.
+     */
+    public List<Order> findAllWithMemberDelivery(int offset, int limit) {
+        return em.createQuery(
+                "select o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
     }
 }
