@@ -13,6 +13,8 @@ spring:
         format_sql: true
         show_sql: true
         default_batch_fetch_size: 100 #100개 까지 모아놨다가 지연로딩인 것들 in 사용해서 조회
+    open-in-view: false #Transaction 안에서만 즉 repository와 service안에서만 영속성 컨텍스트가 살아있고 controller로 가면 죽음
+    #고객 서비스의 실시간 API는 OSIV를 끄고, ADMIN 처럼 커넥션을 많이 사용하지 않는 곳에서는 OSIV를 켠다.
 
 logging.level:
   org.hibernate.sql: debug
